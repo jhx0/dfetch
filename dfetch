@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+#
+# Copyright (c) 2025 jhx <jhx0x00@gmail.com>
+#
+# Permission to use, copy, modify, and distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+#
+
+# Color definitions
+RED='\033[1;31m'
+CLEAR='\033[0m'
+
+# Function definitions
+init() {
+    # Check if Apt is available, otherwise we are probably 
+    # not on a Debian/Ubuntu (based) system.
+    check=`which apt`
+    if [ "$?" != "0" ]; then
+        echo "Not a Debian/Ubuntu based system - Exiting"
+        exit 1
+    fi
+}
+
+print_os() {
+    . /etc/os-release
+
+    echo $PRETTY_NAME
+}
+
+print_hostname() {
+    echo `hostname`
+}
+
+print_arch() {
+    echo `arch`
+}
+
+print_kernel() {
+    echo `uname -r`
+}
+
+print_packages() {
+    output=`apt list --installed 2>/dev/null | wc -l`
+    echo $output
+}
+
+print_pinned_pkg() {
+    output=`apt-mark showhold | wc -l`
+    echo $output
+}
+
+print_apt_ver() {
+    output=`apt -v | awk '{print $2}'`
+    echo $output
+}
+
+print_upgrades() {
+    output=`apt list --upgradable 2>/dev/null | grep -v ^Listing | wc -l`
+    echo $output
+}
+
+print_archive_size() {
+    echo `du -hs /var/cache/apt/archives/ 2>/dev/null | awk '{print $1}'`
+}
+
+print_avail_pkg() {
+    echo `apt list 2>/dev/null | grep -v ^Listing | wc -l`
+}
+
+print_top_pkg() {
+    dpkg-query -Wf '${Installed-Size} - ${Package}\n' | sort -n | tail -n5 | cut -d" " -f 2-3
+}
+
+print_transitional_pkg() {
+    dpkg -l | grep ^ii | grep -i -E "(transition|dummy)" | awk '{print $2}'
+
+}
+
+print_inst_kernel() {
+    apt list --installed 2>/dev/null | grep linux-image | cut -d, -f1
+}
+
+print_archs_enabled() {
+    dpkg --print-architecture
+    dpkg --print-foreign-architectures
+}
+
+main() {
+    init
+
+    echo -e "${RED}System${CLEAR}: `print_os`"
+    echo -e "${RED}Hostname${CLEAR}: `print_hostname`"
+    echo -e "${RED}Architecture${CLEAR}: `print_arch`"
+    echo -e "${RED}Kernel${CLEAR}: `print_kernel`"
+    echo -e "${RED}Packages${CLEAR}: `print_packages`"
+    echo -e "${RED}Pinned packages${CLEAR}: `print_pinned_pkg`"
+    echo -e "${RED}Apt version${CLEAR}: `print_apt_ver`"
+    echo -e "${RED}Pending upgrades${CLEAR}: `print_upgrades`"
+    echo -e "${RED}Local Package archive size${CLEAR}: `print_archive_size`"
+    echo -e "${RED}Available packages [total]${CLEAR}: `print_avail_pkg`"
+
+    echo
+
+    echo -e "${RED}Top five packages (Size)${CLEAR}:"
+    print_top_pkg
+
+    echo
+
+    echo -e "${RED}Transitional/Dummy packages [installed]${CLEAR}:"
+    print_transitional_pkg
+
+    echo 
+
+    echo -e "${RED}Installed Kernel packages${CLEAR}:"
+    print_inst_kernel
+
+    echo
+
+    echo -e "${RED}Architectures enabled${CLEAR}:"
+    print_archs_enabled
+
+    exit 0
+}
+
+main
