@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright (c) 2025 jhx <jhx0x00@gmail.com>
+# Copyright (c) 2025 - 2026 jhx <jhx0x00@gmail.com>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -33,43 +33,43 @@ init() {
 print_os() {
     . /etc/os-release
 
-    echo $PRETTY_NAME
+    echo "$PRETTY_NAME"
 }
 
 print_uptime() {
-	echo `uptime -p`
+	uptime -p
 }
 
 print_hostname() {
-    echo `hostname`
+    hostname
 }
 
 print_arch() {
-    echo `arch`
+    arch
 }
 
 print_kernel() {
-    echo `uname -r`
+    uname -r
 }
 
 print_packages() {
     output=`apt list --installed 2>/dev/null | wc -l`
-    echo $output
+    echo "$output"
 }
 
 print_pinned_pkg() {
     output=`apt-mark showhold | wc -l`
-    echo $output
+    echo "$output"
 }
 
 print_apt_ver() {
     output=`apt -v | awk '{print $2}'`
-    echo $output
+    echo "$output"
 }
 
 print_upgrades() {
     output=`apt list --upgradable 2>/dev/null | grep -v ^Listing | wc -l`
-    echo $output
+    echo "$output"
 }
 
 print_archive_size() {
@@ -90,7 +90,7 @@ print_transitional_pkg() {
 }
 
 print_inst_kernel() {
-    apt list --installed 2>/dev/null | grep linux-image | cut -d, -f1
+    apt list --installed 2>/dev/null | grep linux-image | cut -d, -f1 | awk '{print $1}'
 }
 
 print_archs_enabled() {
