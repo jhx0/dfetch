@@ -23,8 +23,7 @@ CLEAR='\033[0m'
 init() {
     # Check if Apt is available, otherwise we are probably 
     # not on a Debian/Ubuntu (based) system.
-    check=`which apt`
-    if [ "$?" != "0" ]; then
+    if ! command -v apt &>/dev/null; then
         echo "Not a Debian/Ubuntu based system - Exiting"
         exit 1
     fi
@@ -98,6 +97,10 @@ print_archs_enabled() {
     dpkg --print-foreign-architectures
 }
 
+print_apt_stats() {
+    apt-cache stats | head -5
+}
+
 main() {
     init
 
@@ -133,7 +136,10 @@ main() {
     echo -e "${RED}Architectures enabled${CLEAR}:"
     print_archs_enabled
 
-    exit 0
+    echo
+
+    echo -e "${RED}APT Statistics${CLEAR}:"
+    print_apt_stats
 }
 
 main
